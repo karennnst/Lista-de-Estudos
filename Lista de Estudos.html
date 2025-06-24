@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  
+  <title>Lista de Estudos</title>
+  <style>
+    body {
+      font-family:poppins;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      background-color: #85d888;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: white;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li.estudado {
+      text-decoration: line-through;
+      background-color: #d4edda;
+      color: #989898;
+    }
+
+    .acoes button {
+      margin-left: 5px;
+    }
+
+    .galeria {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .galeria img {
+      max-width: 200px;
+      max-height: 150px;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+    }
+
+    .img-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .img-wrapper button {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background-color: rgba(255, 24, 24, 0.873);
+      border: none;
+      color: white;
+      border-radius: 5px;
+      padding: 4px 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lista de Estudos</h1>
+
+  <!-- Adicionar conteúdo -->
+  <div>
+    <input type="text" id="conteudoInput" placeholder="Ex: Equações do 2º grau" />
+    <button onclick="adicionarConteudo()">Adicionar</button>
+  </div>
+
+  <!-- Lista de conteúdos -->
+  <ul id="listaConteudos"></ul>
+
+  <!-- Seção de imagens -->
+  <h2>Imagens de Apoio</h2>
+  <div>
+    <input type="text" id="imagemInput" placeholder="Cole o link da imagem aqui" />
+    <button onclick="adicionarImagem()">Adicionar Imagem</button>
+  </div>
+  <div class="galeria" id="galeriaImagens"></div>
+
+  <script>
+    // ----- Lista de Conteúdos -----
+    let conteudos = JSON.parse(localStorage.getItem('conteudos')) || [];
+
+    function salvarConteudos() {
+      localStorage.setItem('conteudos', JSON.stringify(conteudos));
+    }
+
+    function renderizarLista() {
+      const lista = document.getElementById('listaConteudos');
+      lista.innerHTML = '';
+
+      conteudos.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = item.estudado ? 'estudado' : '';
+
+        li.innerHTML = `
+          <span onclick="alternarEstudado(${index})">${item.nome}</span>
+          <div class="acoes">
+            <button onclick="alternarEstudado(${index})">${item.estudado ? 'Desmarcar' : 'Estudado'}</button>
+            <button onclick="removerConteudo(${index})" style="background-color: #d9534f;">🗑️</button>
+          </div>
+        `;
+
+        lista.appendChild(li);
+      });
+    }
+
+    function adicionarConteudo() {
+      const input = document.getElementById('conteudoInput');
+      const nome = input.value.trim();
+      if (nome !== '') {
+        conteudos.push({ nome, estudado: false });
+        salvarConteudos();
+        renderizarLista();
+        input.value = '';
+      }
+    }
+
+    function removerConteudo(index) {
+      conteudos.splice(index, 1);
+      salvarConteudos();
+      renderizarLista();
+    }
+
+    function alternarEstudado(index) {
+      conteudos[index].estudado = !conteudos[index].estudado;
+      salvarConteudos();
+      renderizarLista();
+    }
+
+    // ----- Imagens -----
+    let imagens = JSON.parse(localStorage.getItem('imagens')) || [];
+
+    function salvarImagens() {
+      localStorage.setItem('imagens', JSON.stringify(imagens));
+    }
+
+    function renderizarImagens() {
+      const galeria = document.getElementById('galeriaImagens');
+      galeria.innerHTML = '';
+
+      imagens.forEach((url, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'img-wrapper';
+        wrapper.innerHTML = `
+          <img src="${url}" alt="Imagem ${index + 1}" />
+          <button onclick="removerImagem(${index})">✖</button>
+        `;
+        galeria.appendChild(wrapper);
+      });
+    }
+
+    function adicionarImagem() {
+      const input = document.getElementById('imagemInput');
+      const url = input.value.trim();
+      if (url !== '') {
+        imagens.push(url);
+        salvarImagens();
+        renderizarImagens();
+        input.value = '';
+      }
+    }
+
+    function removerImagem(index) {
+      imagens.splice(index, 1);
+      salvarImagens();
+      renderizarImagens();
+    }
+
+    // Inicialização
+    renderizarLista();
+    renderizarImagens();
+  </script>
+</body>
+</html>
