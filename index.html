@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!-- Define o conjunto de caracteres (aceita acentos, por exemplo) -->
   <meta charset="UTF-8" />
+  <!-- Faz a página se adaptar a dispositivos móveis -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <!-- Conexões e fonte personalizada Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
   <title>Lista de Estudos</title>
+
   <style>
+    /* Estilo geral da página */
     body {
       font-family: 'Poppins', sans-serif;
       max-width: 700px;
@@ -16,7 +22,14 @@
       padding: 20px;
       background-color: #f7f7f7;
     }
-    h1, h2 { text-align: center; color: #333; }
+
+    /* Títulos centralizados */
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    /* Estilo do campo de texto */
     input[type="text"] {
       width: 70%;
       padding: 10px;
@@ -24,6 +37,8 @@
       border-radius: 5px;
       border: 1px solid #ccc;
     }
+
+    /* Botões */
     button {
       padding: 10px;
       border: none;
@@ -32,10 +47,14 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
+    /* Lista sem marcadores */
     ul {
       list-style: none;
       padding: 0;
     }
+
+    /* Itens da lista */
     li {
       background: white;
       margin-top: 10px;
@@ -45,14 +64,20 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    /* Itens estudados aparecem riscados e esmaecidos */
     li.estudado {
       text-decoration: line-through;
       background-color: #d4edda;
       color: #989898;
     }
+
+    /* Espaço entre botões internos */
     .acoes button {
       margin-left: 5px;
     }
+
+    /* Galeria de imagens */
     .galeria {
       display: flex;
       flex-wrap: wrap;
@@ -60,16 +85,22 @@
       margin-top: 20px;
       justify-content: center;
     }
+
+    /* Estilo das imagens */
     .galeria img {
       max-width: 200px;
       max-height: 150px;
       border-radius: 8px;
       border: 2px solid #ddd;
     }
+
+    /* Contêiner da imagem com botão de remover */
     .img-wrapper {
       position: relative;
       display: inline-block;
     }
+
+    /* Botão para remover imagem */
     .img-wrapper button {
       position: absolute;
       top: 4px;
@@ -86,156 +117,165 @@
 <body>
   <h1>Lista de Estudos</h1>
 
-  <!-- Campo para adicionar conteúdo -->
+  <!-- Campo para digitar e adicionar novo conteúdo -->
   <div>
     <input type="text" id="conteudoInput" placeholder="Ex: Equações do 2º grau" />
     <button id="btnAdicionarConteudo">Adicionar</button>
+    <!-- Contador de conteúdos adicionados -->
+    <p>Conteúdos adicionados: <span id="contador">0</span></p>
   </div>
 
-  <!-- Lista -->
+  <!-- Lista dos conteúdos -->
   <ul id="listaConteudos"></ul>
 
-  <!-- Campo para adicionar imagens -->
+  <!-- Campo para adicionar imagem -->
   <h2>Imagens de Apoio</h2>
   <div>
     <input type="text" id="imagemInput" placeholder="Cole o link da imagem aqui" />
     <button id="btnAdicionarImagem">Adicionar Imagem</button>
   </div>
+  <!-- Galeria com imagens adicionadas -->
   <div class="galeria" id="galeriaImagens"></div>
 
 <script>
+  // Carrega os conteúdos e imagens salvos do navegador ou cria arrays vazios
+  let conteudos = JSON.parse(localStorage.getItem('conteudos')) || [];
+  let imagens = JSON.parse(localStorage.getItem('imagens')) || [];
 
-/* Inicialização dos arrays de conteúdos e imagens
-carregando do localStorage (ou vazio se não existir)*/
-let conteudos = JSON.parse(localStorage.getItem('conteudos')) || [];
-let imagens = JSON.parse(localStorage.getItem('imagens')) || [];
+  // Carrega o contador salvo ou começa com 0
+  let contadorEstudos = parseInt(localStorage.getItem('contadorEstudos')) || 0;
 
+  // Salva os conteúdos no localStorage
+  function salvarConteudos() {
+    localStorage.setItem('conteudos', JSON.stringify(conteudos));
+  }
 
-// Salvar no localStorage
-function salvarConteudos() {
-  localStorage.setItem('conteudos', JSON.stringify(conteudos));
-}
+  // Salva as imagens no localStorage
+  function salvarImagens() {
+    localStorage.setItem('imagens', JSON.stringify(imagens));
+  }
 
-function salvarImagens() {
-  localStorage.setItem('imagens', JSON.stringify(imagens));
-}
+  // Atualiza o número do contador na tela
+  function atualizarContador() {
+    document.getElementById('contador').textContent = contadorEstudos;
+  }
 
+  // Renderiza a lista de conteúdos na tela
+  function renderizarLista() {
+    const lista = document.getElementById('listaConteudos');
+    lista.innerHTML = '';
 
-// Renderizar lista de conteúdos
-function renderizarLista() {
-  const lista = document.getElementById('listaConteudos');
-  lista.innerHTML = '';
+    conteudos.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.className = item.estudado ? 'estudado' : '';
 
-  conteudos.forEach((item, index) => {
-    const li = document.createElement('li');
-    li.className = item.estudado ? 'estudado' : '';
+      li.innerHTML = `
+        <span class="item-nome">${item.nome}</span>
+        <div class="acoes">
+          <button class="btn-toggle">${item.estudado ? 'Desmarcar' : 'Estudado'}</button>
+          <button class="btn-remover" style="background-color: #d9534f;">🗑️</button>
+        </div>
+      `;
 
-    // usando event delegation (mais limpo que onclick direto)
-    li.innerHTML = `
-      <span class="item-nome">${item.nome}</span>
-      <div class="acoes">
-        <button class="btn-toggle">${item.estudado ? 'Desmarcar' : 'Estudado'}</button>
-        <button class="btn-remover" style="background-color: #d9534f;">🗑️</button>
-      </div>
-    `;
+      // Marca ou desmarca como estudado
+      const btnToggle = li.querySelector('.btn-toggle');
+      btnToggle.addEventListener("click", () => {
+        alternarEstudado(index);
+      });
 
-    // botões internos
-    const btnToggle = li.querySelector('.btn-toggle');
-    btnToggle.addEventListener("click", () => {
-      alternarEstudado(index);
+      // Remove o item da lista
+      const btnRemover = li.querySelector('.btn-remover');
+      btnRemover.addEventListener("click", () => {
+        removerConteudo(index);
+      });
+
+      // Também alterna se clicar no nome
+      const nomeSpan = li.querySelector('.item-nome');
+      nomeSpan.addEventListener("click", () => {
+        alternarEstudado(index);
+      });
+
+      lista.appendChild(li);
     });
+  }
 
-    const btnRemover = li.querySelector('.btn-remover');
-    btnRemover.addEventListener("click", () => {
-      removerConteudo(index);
+  // Renderiza as imagens na galeria
+  function renderizarImagens() {
+    const galeria = document.getElementById('galeriaImagens');
+    galeria.innerHTML = '';
+
+    imagens.forEach((url, index) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'img-wrapper';
+      wrapper.innerHTML = `
+        <img src="${url}" alt="Imagem ${index + 1}">
+        <button class="btn-remover-imagem">✖</button>
+      `;
+      // Botão para remover imagem
+      wrapper.querySelector('.btn-remover-imagem').addEventListener("click", () => {
+        removerImagem(index);
+      });
+      galeria.appendChild(wrapper);
     });
+  }
 
-    // clique no nome também alterna
-    const nomeSpan = li.querySelector('.item-nome');
-    nomeSpan.addEventListener("click", () => {
-      alternarEstudado(index);
-    });
+  // Adiciona um novo conteúdo à lista
+  function adicionarConteudo() {
+    const input = document.getElementById('conteudoInput');
+    const nome = input.value.trim(); // Remove espaços extras
 
-    lista.appendChild(li);
-  });
-}
+    if (nome !== '') {
+      conteudos.push({ nome, estudado: false }); // Adiciona o novo conteúdo
+      contadorEstudos++; // Aumenta o contador
+      localStorage.setItem('contadorEstudos', contadorEstudos); // Salva o contador
+      atualizarContador(); // Atualiza na tela
+      salvarConteudos(); // Salva a lista
+      renderizarLista(); // Mostra o novo item
+      input.value = ''; // Limpa a caixinha
+    }
+  }
 
+  // Adiciona nova imagem
+  function adicionarImagem() {
+    const input = document.getElementById('imagemInput');
+    const url = input.value.trim();
+    if (url !== '') {
+      imagens.push(url);
+      salvarImagens();
+      renderizarImagens();
+      input.value = '';
+    }
+  }
 
-// Renderizar galeria de imagens
-function renderizarImagens() {
-  const galeria = document.getElementById('galeriaImagens');
-  galeria.innerHTML = '';
-
-  imagens.forEach((url, index) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'img-wrapper';
-    wrapper.innerHTML = `
-      <img src="${url}" alt="Imagem ${index + 1}">
-      <button class="btn-remover-imagem">✖</button>
-    `;
-    // remover imagem
-    wrapper.querySelector('.btn-remover-imagem').addEventListener("click", () => {
-      removerImagem(index);
-    });
-    galeria.appendChild(wrapper);
-  });
-}
-
-
-// Adicionar conteúdo novo
-function adicionarConteudo() {
-  const input = document.getElementById('conteudoInput');
-  const nome = input.value.trim();
-  if (nome !== '') {
-    conteudos.push({ nome, estudado: false });
+  // Remove um conteúdo da lista
+  function removerConteudo(index) {
+    conteudos.splice(index, 1); // Remove o item pelo índice
     salvarConteudos();
     renderizarLista();
-    input.value = '';
   }
-}
 
-
-// Adicionar imagem nova
-function adicionarImagem() {
-  const input = document.getElementById('imagemInput');
-  const url = input.value.trim();
-  if (url !== '') {
-    imagens.push(url);
+  // Remove uma imagem
+  function removerImagem(index) {
+    imagens.splice(index, 1);
     salvarImagens();
     renderizarImagens();
-    input.value = '';
   }
-}
 
+  // Alterna se o conteúdo está estudado ou não
+  function alternarEstudado(index) {
+    conteudos[index].estudado = !conteudos[index].estudado;
+    salvarConteudos();
+    renderizarLista();
+  }
 
-// Remover conteúdo
-function removerConteudo(index) {
-  conteudos.splice(index, 1);
-  salvarConteudos();
+  // Eventos dos botões de adicionar
+  document.getElementById('btnAdicionarConteudo').addEventListener("click", adicionarConteudo);
+  document.getElementById('btnAdicionarImagem').addEventListener("click", adicionarImagem);
+
+  // Ao abrir a página, mostra tudo que já está salvo
   renderizarLista();
-}
-
-// Remover imagem
-function removerImagem(index) {
-  imagens.splice(index, 1);
-  salvarImagens();
   renderizarImagens();
-}
-
-
-// Alternar estudado
-function alternarEstudado(index) {
-  conteudos[index].estudado = !conteudos[index].estudado;
-  salvarConteudos();
-  renderizarLista();
-}
-
-document.getElementById('btnAdicionarConteudo').addEventListener("click", adicionarConteudo);
-document.getElementById('btnAdicionarImagem').addEventListener("click", adicionarImagem);
-
-// inicializar ao carregar
-renderizarLista();
-renderizarImagens();
+  atualizarContador(); // Exibe o contador salvo
 </script>
 </body>
 </html>
