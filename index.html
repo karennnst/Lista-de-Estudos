@@ -23,6 +23,17 @@
       background-color: #f7f7f7;
     }
 
+    .darkmode{
+      background-color:#2C2B3C ;
+      color: #cacaca;
+    }
+
+    .darkmode h1,
+    .darkmode h2 {
+      color: #f1f1f1; 
+    }
+
+
     /* Títulos centralizados */
     h1, h2 {
       text-align: center;
@@ -105,7 +116,7 @@
       position: absolute;
       top: 4px;
       right: 4px;
-      background-color: rgba(255, 24, 24, 0.873);
+      background-color: #ff1818df;
       border: none;
       color: white;
       border-radius: 5px;
@@ -137,7 +148,10 @@
   <!-- Galeria com imagens adicionadas -->
   <div class="galeria" id="galeriaImagens"></div>
 
+  <button id="darkModeToggle">Alternar Modo Escuro</button>
+
 <script>
+
   // Carrega os conteúdos e imagens salvos do navegador ou cria arrays vazios
   let conteudos = JSON.parse(localStorage.getItem('conteudos')) || [];
   let imagens = JSON.parse(localStorage.getItem('imagens')) || [];
@@ -159,6 +173,23 @@
   function atualizarContador() {
     document.getElementById('contador').textContent = contadorEstudos;
   }
+
+    const body = document.querySelector('body');
+const darkModeToggle = document.getElementById('darkModeToggle'); // Corrigido
+const estaDarkMode = localStorage.getItem('darkMode') === 'true';
+
+// Aplica a classe se o modo escuro estava ativado antes
+if (estaDarkMode) {
+  body.classList.add('darkmode'); // Corrigido: nome da classe certo
+}
+
+// Ao clicar no botão, alterna o modo e salva no localStorage
+darkModeToggle.addEventListener('click', () => {
+  body.classList.toggle('darkmode'); // Corrigido: nome da classe certo
+  const estaDarkMode = body.classList.contains('darkmode');
+  localStorage.setItem('darkMode', estaDarkMode);
+});
+
 
   // Renderiza a lista de conteúdos na tela
   function renderizarLista() {
